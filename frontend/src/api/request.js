@@ -1,38 +1,46 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import router from '@/router'
 
 // 创建 axios 实例
 const request = axios.create({
-    baseURL: 'http://localhost:8080/api',
-    timeout: 5000
+    baseURL: '/api',
+    timeout: 15000
 })
 
-// 添加请求拦截器
+// 请求拦截器
 request.interceptors.request.use(
     config => {
-        console.log('Request Config:', config)
-        // 这里可以添加token等认证信息
-        // if (store.getters.token) {
-        //     config.headers['Authorization'] = `Bearer ${store.getters.token}`
-        // }
+        const userStore = useUserStore()
+        if (userStore.token) {
+            config.headers['Authorization'] = `Bearer ${userStore.token}`
+        }
         return config
     },
     error => {
-        console.error('Request Error:', error)
+        console.error('Request error:', error)
         return Promise.reject(error)
     }
 )
 
-// 添加响应拦截器
+// 响应拦截器
 request.interceptors.response.use(
     response => {
-        console.log('Response:', response)
-        return response
+        return response.data
     },
     error => {
-        console.error('API Error:', error.response || error)
-        const message = error.response?.data?.message || error.message || '请求失败'
+        console.error('Response error:', error)
+        const message = error.response?.data?.message || '请求失败'
         ElMessage.error(message)
+        
+        // 处理 401 未授权错误
+        if (error.response?.status === 401) {
+            const userStore = useUserStore()
+            userStore.logout()
+            router.push('/login')
+        }
+        
         return Promise.reject(error)
     }
 )

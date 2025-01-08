@@ -15,8 +15,18 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        // 不要重写路径，因为后端已经配置了context-path
-        // rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('proxy error', err)
+          })
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Sending Request:', req.method, req.url)
+          })
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('Received Response:', proxyRes.statusCode, req.url)
+          })
+        }
       }
     }
   },

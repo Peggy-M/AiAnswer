@@ -1,45 +1,31 @@
-import request from './request'
+import request from '@/utils/request'
 
 export const examApi = {
-    getAllExams() {
-        return request.get('/exams')
+    // 获取考试列表
+    getExamList(params) {
+        return request({
+            url: '/exam/list',
+            method: 'get',
+            params
+        })
     },
     
-    getExam(id) {
-        return request.get(`/exams/${id}`)
+    // 获取考试详情
+    getExamDetail(id) {
+        return request({
+            url: `/exam/${id}`,
+            method: 'get'
+        })
     },
     
-    createExam(exam) {
-        return request.post('/exams', exam)
-    },
-    
-    updateExam(id, exam) {
-        return request.put(`/exams/${id}`, exam)
-    },
-    
-    deleteExam(id) {
-        return request.delete(`/exams/${id}`)
-    },
-    
-    publishExam(id) {
-        return request.post(`/exams/${id}/publish`)
-    },
-    
-    startExam(examId, userId) {
-        return request.post(`/exams/${examId}/start?userId=${userId}`)
-    },
-    
-    submitExam(examId, userId, answers) {
-        return request.post(`/exams/${examId}/submit?userId=${userId}`, answers)
-    },
-    
-    getUserExamRecords(userId) {
-        return request.get(`/exams/user/${userId}`)
-    },
-    
-    generateRandomPaper(subject, questionCount) {
-        return request.post('/exams/generate', null, {
-            params: { subject, questionCount }
+    // 提交考试答案
+    submitExam(id, answers) {
+        return request({
+            url: `/exam/${id}/submit`,
+            method: 'post',
+            data: answers
         })
     }
-} 
+}
+
+export default examApi 

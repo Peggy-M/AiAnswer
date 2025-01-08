@@ -133,26 +133,28 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseStatus getCourseStatus(Long courseId) {
-        // TODO: 获取当前用户
-        Course course = findById(courseId);
-        
-        // 查找学习记录
-        StudyRecord record = studyRecordRepository
-            // .findByCourseAndUser(course, currentUser)
-            .findByCourse(course)
-            .orElse(null);
+        // 获取当前用户ID（这里假设已经有了用户认证系统）
+        Long userId = 1L; // 临时硬编码，实际应该从SecurityContext中获取
         
         CourseStatus status = new CourseStatus();
         status.setCourseId(courseId);
         
-        if (record != null) {
-            status.setStatus(record.getStatus());
-            status.setProgress(record.getProgress());
-            status.setLastStudyTime(record.getLastStudyTime().toEpochMilli());
-            status.setTotalTime(record.getTotalTime());
-            status.setIsJoined(true);
+        try {
+            // 使用 Optional 处理可能的空值情况
+            studyRecordRepository
+                .findFirstByUserIdAndCourseIdOrderByLastStudyTimeDesc(userId, courseId)
+                .ifPresent(record -> {
+                    status.setStatus(record.getStatus());
+                    status.setProgress(record.getProgress());
+                    status.setLastStudyTime(record.getLastStudyTime().toEpochMilli());
+                    status.setTotalTime(record.getTotalTime());
+                    status.setIsJoined(true);
+                });
+            
+            return status;
+        } catch (Exception e) {
+            log.error("Error getting course status for courseId: " + courseId, e);
+            return status; // 返回默认状态
         }
-        
-        return status;
     }
 } 

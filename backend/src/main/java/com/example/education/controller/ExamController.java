@@ -16,7 +16,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/exams")
-@CrossOrigin(origins = "*")
 public class ExamController {
     
     @Autowired

@@ -1,56 +1,58 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import router from '@/router'
 
-console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL || '/api')
-
-const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+// 创建 axios 实例
+const request = axios.create({
+  baseURL: '/api',
   timeout: 15000
 })
 
 // 请求拦截器
-service.interceptors.request.use(
+request.interceptors.request.use(
   config => {
-    // 开发环境下打印请求信息
-    if (import.meta.env.DEV) {
-      console.log('Request:', {
-        url: config.url,
-        method: config.method,
-        params: config.params,
-        data: config.data,
-        baseURL: config.baseURL
-      })
+    const userStore = useUserStore()
+    if (userStore.token) {
+      config.headers['Authorization'] = `Bearer ${userStore.token}`
     }
+    console.log('Request:', config.method.toUpperCase(), config.url, config.data || config.params)
     return config
   },
   error => {
-    console.error('Request Error:', error)
+    console.error('Request error:', error)
     return Promise.reject(error)
   }
 )
 
 // 响应拦截器
-service.interceptors.response.use(
+request.interceptors.response.use(
   response => {
-    // 开发环境下打印响应信息
-    if (import.meta.env.DEV) {
-      console.log('Response:', {
-        url: response.config.url,
-        status: response.status,
-        data: response.data
-      })
+    const res = response.data
+    console.log('Response:', response.config.url, res)
+    
+    // 如果响应成功但业务状态码不是200，显示错误信息
+    if (res.code !== 200) {
+      ElMessage.error(res.message || '操作失败')
+      return Promise.reject(new Error(res.message || '操作失败'))
     }
-    return response.data
+    
+    return res.data
   },
   error => {
-    console.error('Response Error:', error)
-    
-    // 处理错误响应
-    const message = error.response?.data?.message || error.message || '请求失败'
+    console.error('Response error:', error.response || error)
+    const message = error.response?.data?.message || '请求失败'
     ElMessage.error(message)
+    
+    // 处理 401 未授权错误
+    if (error.response?.status === 401) {
+      const userStore = useUserStore()
+      userStore.logout()
+      router.push('/login')
+    }
     
     return Promise.reject(error)
   }
 )
 
-export default service 
+export default request 

@@ -1,11 +1,11 @@
 <template>
   <div class="exam-list">
     <div class="header">
-      <h2>试卷列表</h2>
-      <div class="actions">
-        <el-button type="primary" @click="showCreateDialog">创建试卷</el-button>
-        <el-button type="success" @click="showGenerateDialog">随机生成</el-button>
-      </div>
+      <h2>考试中心</h2>
+      <el-button type="primary" @click="showCreateDialog = true">
+        <el-icon><Plus /></el-icon>
+        创建考试
+      </el-button>
     </div>
 
     <el-row :gutter="20">
@@ -38,7 +38,11 @@
     </el-row>
 
     <!-- 创建试卷对话框 -->
-    <el-dialog v-model="createDialogVisible" title="创建试卷">
+    <el-dialog
+      v-model="showCreateDialog"
+      title="创建试卷"
+      width="500px"
+    >
       <el-form :model="newExam" label-width="100px">
         <el-form-item label="标题">
           <el-input v-model="newExam.title"></el-input>
@@ -55,7 +59,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button @click="showCreateDialog = false">取消</el-button>
         <el-button type="primary" @click="createExam">确定</el-button>
       </template>
     </el-dialog>
@@ -83,10 +87,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { examApi } from '@/api/exam'
+import { Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const exams = ref([])
-const createDialogVisible = ref(false)
+const showCreateDialog = ref(false)
 const generateDialogVisible = ref(false)
 
 const newExam = ref({
@@ -114,7 +119,7 @@ const createExam = async () => {
   try {
     await examApi.createExam(newExam.value)
     ElMessage.success('创建成功')
-    createDialogVisible.value = false
+    showCreateDialog.value = false
     fetchExams()
   } catch (error) {
     ElMessage.error('创建失败')
@@ -146,7 +151,7 @@ const publishExam = async (id) => {
 }
 
 const startExam = (id) => {
-  router.push(`/exams/${id}`)
+  router.push(`/exam/${id}`)
 }
 
 onMounted(() => {

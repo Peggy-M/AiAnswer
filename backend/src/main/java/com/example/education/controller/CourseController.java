@@ -99,7 +99,14 @@ public class CourseController {
 
     @GetMapping("/{id}/status")
     public ResponseEntity<CourseStatus> getCourseStatus(@PathVariable Long id) {
-        log.info("Getting course status: {}", id);
-        return ResponseEntity.ok(courseService.getCourseStatus(id));
+        try {
+            log.info("Getting course status: {}", id);
+            return ResponseEntity.ok(courseService.getCourseStatus(id));
+        } catch (Exception e) {
+            log.error("Error getting course status", e);
+            CourseStatus defaultStatus = new CourseStatus();
+            defaultStatus.setCourseId(id);
+            return ResponseEntity.ok(defaultStatus);
+        }
     }
 } 

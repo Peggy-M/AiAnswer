@@ -4,19 +4,14 @@ import request from '@/utils/request'
 export const courseApi = {
   // 获取课程列表
   getCourseList(params) {
-    console.log('Calling getCourseList with params:', params)
     return request({
       url: '/courses',
       method: 'get',
-      params
-    })
-  },
-
-  getLearningCourses(params) {
-    return request({
-      url: '/courses/learning',
-      method: 'get',
-      params
+      params: {
+        page: params.page || 0,
+        size: params.size || 10,
+        ...params
+      }
     })
   },
 
@@ -48,31 +43,28 @@ export const courseApi = {
 
   // 删除课程
   deleteCourse(id) {
-    if (!id || id === 'undefined') {
-      return Promise.reject(new Error('Invalid course ID'))
-    }
     return request({
       url: `/courses/${id}`,
       method: 'delete'
     })
   },
 
-  // 加入课程
-  joinCourse(courseId) {
+  // 获取课程内容
+  getCourseContent(id) {
     return request({
-      url: `/courses/${courseId}/join`,
-      method: 'post'
+      url: `/courses/${id}/content`,
+      method: 'get'
     })
   },
 
-  // 获取课程学习状态
-  getCourseStatus(courseId) {
+  // 加入课程
+  joinCourse(id) {
     return request({
-      url: `/courses/${courseId}/status`,
-      method: 'get'
+      url: `/courses/${id}/join`,
+      method: 'post'
     })
   }
 }
 
 // 默认导出
-export default courseApi 
+export default courseApi
